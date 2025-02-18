@@ -1,0 +1,58 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+
+variables:
+  containerRegistry: 'containerestudos'  # Substitua pelo nome do seu ACR
+  imageName: 'aplicacaoweb'  # Nome da imagem
+  tag: '$(Build.BuildId)'
+
+steps:
+- task: Docker@2
+  displayName: 'Login no Azure Container Registry'
+  inputs:
+    containerRegistry: $(containerRegistry)
+    command: 'login'
+
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      
+      pwd
+      ls
+      docker -v
+
+
+
+- task: Docker@2
+  displayName: 'Build da imagem Docker'
+  inputs:
+    containerRegistry: '$(containerRegistry)'
+    repository: '$(imageName)'
+    command: 'build'
+    Dockerfile: '/home/vsts/work/1/s/Dockerfile'
+    buildContext: '.'
+    tags: '$(tag)'
+
+
+
+- task: Docker@2
+  displayName: 'Push da imagem para ACR'
+  inputs:
+    containerRegistry: $(containerRegistry)
+    command: 'push'
+    repository: $(imageName)
+    tags: '$(tag)'
+
+
